@@ -33,7 +33,7 @@ class nsIDOMDataChannel;
 namespace test {
 using namespace mozilla::dom;
 
-class AFakePCObserver : public nsSupportsWeakReference
+class AFakePCObserver : public PeerConnectionObserverExternal
 {
 protected:
   typedef mozilla::ErrorResult ER;
@@ -70,27 +70,6 @@ public:
   std::string name;
   std::vector<std::string> candidates;
 
-  virtual NS_IMETHODIMP OnCreateOfferSuccess(const char* offer, ER&) = 0;
-  virtual NS_IMETHODIMP OnCreateOfferError(uint32_t code, const char *msg, ER&) = 0;
-  virtual NS_IMETHODIMP OnCreateAnswerSuccess(const char* answer, ER&) = 0;
-  virtual NS_IMETHODIMP OnCreateAnswerError(uint32_t code, const char *msg, ER&) = 0;
-  virtual NS_IMETHODIMP OnSetLocalDescriptionSuccess(ER&) = 0;
-  virtual NS_IMETHODIMP OnSetRemoteDescriptionSuccess(ER&) = 0;
-  virtual NS_IMETHODIMP OnSetLocalDescriptionError(uint32_t code, const char *msg, ER&) = 0;
-  virtual NS_IMETHODIMP OnSetRemoteDescriptionError(uint32_t code, const char *msg, ER&) = 0;
-  virtual NS_IMETHODIMP NotifyConnection(ER&) = 0;
-  virtual NS_IMETHODIMP NotifyClosedConnection(ER&) = 0;
-  virtual NS_IMETHODIMP NotifyDataChannel(nsIDOMDataChannel *channel, ER&) = 0;
-  virtual NS_IMETHODIMP OnStateChange(PCObserverStateType state_type, ER&,
-                                      void* = nullptr) = 0;
-  virtual NS_IMETHODIMP OnAddStream(nsIDOMMediaStream *stream, ER&) = 0;
-  virtual NS_IMETHODIMP OnRemoveStream(ER&) = 0;
-  virtual NS_IMETHODIMP OnAddTrack(ER&) = 0;
-  virtual NS_IMETHODIMP OnRemoveTrack(ER&) = 0;
-  virtual NS_IMETHODIMP OnAddIceCandidateSuccess(ER&) = 0;
-  virtual NS_IMETHODIMP OnAddIceCandidateError(uint32_t code, const char *msg, ER&) = 0;
-  virtual NS_IMETHODIMP OnIceCandidate(uint16_t level, const char *mid,
-                                       const char *candidate, ER&) = 0;
 protected:
   sipcc::PeerConnectionImpl *pc;
   std::vector<mozilla::DOMMediaStream *> streams;
@@ -99,7 +78,7 @@ protected:
 
 namespace mozilla {
 namespace dom {
-typedef test::AFakePCObserver PeerConnectionObserver;
+typedef PeerConnectionObserverExternal PeerConnectionObserver;
 }
 }
 

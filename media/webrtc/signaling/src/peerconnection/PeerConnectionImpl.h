@@ -22,9 +22,11 @@
 #include "nsComponentManagerUtils.h"
 #include "nsPIDOMWindow.h"
 #include "nsIThread.h"
+#include "nsWeakReference.h"
 
 #include "mozilla/ErrorResult.h"
 #include "mozilla/dom/PeerConnectionImplEnumsBinding.h"
+#include "mozilla/dom/PeerConnectionObserverEnumsBinding.h"
 #include "StreamBuffer.h"
 
 #ifdef MOZILLA_INTERNAL_API
@@ -40,6 +42,37 @@ namespace test {
 class AFakePCObserver;
 #endif
 }
+#ifdef USE_FAKE_PCOBSERVER
+class PeerConnectionObserverExternal : public nsSupportsWeakReference
+{
+public:
+  typedef mozilla::ErrorResult ER;
+  virtual NS_IMETHODIMP OnCreateOfferSuccess(const char* offer, ER&) = 0;
+  virtual NS_IMETHODIMP OnCreateOfferError(uint32_t code, const char *msg, ER&) = 0;
+  virtual NS_IMETHODIMP OnCreateAnswerSuccess(const char* answer, ER&) = 0;
+  virtual NS_IMETHODIMP OnCreateAnswerError(uint32_t code, const char *msg, ER&) = 0;
+  virtual NS_IMETHODIMP OnSetLocalDescriptionSuccess(ER&) = 0;
+  virtual NS_IMETHODIMP OnSetRemoteDescriptionSuccess(ER&) = 0;
+  virtual NS_IMETHODIMP OnSetLocalDescriptionError(uint32_t code, const char *msg, ER&) = 0;
+  virtual NS_IMETHODIMP OnSetRemoteDescriptionError(uint32_t code, const char *msg, ER&) = 0;
+  virtual NS_IMETHODIMP NotifyConnection(ER&) = 0;
+  virtual NS_IMETHODIMP NotifyClosedConnection(ER&) = 0;
+  virtual NS_IMETHODIMP NotifyDataChannel(nsIDOMDataChannel *channel, ER&) = 0;
+  virtual NS_IMETHODIMP OnStateChange(mozilla::dom::PCObserverStateType state_type, ER&,
+                                      void* = nullptr) = 0;
+  virtual NS_IMETHODIMP OnAddStream(nsIDOMMediaStream *stream, ER&) = 0;
+  virtual NS_IMETHODIMP OnRemoveStream(ER&) = 0;
+  virtual NS_IMETHODIMP OnAddTrack(ER&) = 0;
+  virtual NS_IMETHODIMP OnRemoveTrack(ER&) = 0;
+  virtual NS_IMETHODIMP OnAddIceCandidateSuccess(ER&) = 0;
+  virtual NS_IMETHODIMP OnAddIceCandidateError(uint32_t code, const char *msg, ER&) = 0;
+  virtual NS_IMETHODIMP OnIceCandidate(uint16_t level, const char *mid,
+                                       const char *candidate, ER&) = 0;
+protected:
+  PeerConnectionObserverExternal() {}
+  virtual ~PeerConnectionObserverExternal() {}
+};
+#endif
 
 #ifdef USE_FAKE_MEDIA_STREAMS
 class Fake_DOMMediaStream;
@@ -70,7 +103,8 @@ class MediaStreamTrack;
 class RTCStatsReportInternal;
 
 #ifdef USE_FAKE_PCOBSERVER
-typedef test::AFakePCObserver PeerConnectionObserver;
+
+typedef PeerConnectionObserverExternal PeerConnectionObserver;
 typedef const char *PCObserverString;
 #else
 class PeerConnectionObserver;

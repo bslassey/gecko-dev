@@ -256,7 +256,7 @@ public:
   NS_IMETHODIMP NotifyConnection(ER&);
   NS_IMETHODIMP NotifyClosedConnection(ER&);
   NS_IMETHODIMP NotifyDataChannel(nsIDOMDataChannel *channel, ER&);
-  NS_IMETHODIMP OnStateChange(PCObserverStateType state_type, ER&, void*);
+  NS_IMETHODIMP OnStateChange(mozilla::dom::PCObserverStateType state_type, ER&, void*);
   NS_IMETHODIMP OnAddStream(nsIDOMMediaStream *stream, ER&);
   NS_IMETHODIMP OnRemoveStream(ER&);
   NS_IMETHODIMP OnAddTrack(ER&);
@@ -368,7 +368,7 @@ TestObserver::NotifyDataChannel(nsIDOMDataChannel *channel, ER&)
 }
 
 NS_IMETHODIMP
-TestObserver::OnStateChange(PCObserverStateType state_type, ER&, void*)
+TestObserver::OnStateChange(mozilla::dom::PCObserverStateType state_type, ER&, void*)
 {
   nsresult rv;
   PCImplReadyState gotready;
