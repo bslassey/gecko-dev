@@ -77,6 +77,16 @@ class Fake_MediaStream {
     mListeners.erase(aListener);
   }
 
+  void NotifyPull(mozilla::MediaStreamGraph* graph,
+                  mozilla::StreamTime aDesiredTime) {
+
+    mozilla::MutexAutoLock lock(mMutex);
+    std::set<Fake_MediaStreamListener *>::iterator it;
+    for (it = mListeners.begin(); it != mListeners.end(); ++it) {
+      (*it)->NotifyPull(graph, aDesiredTime);
+    }
+  }
+
   virtual Fake_SourceMediaStream *AsSourceStream() { return nullptr; }
 
   virtual nsresult Start() { return NS_OK; }

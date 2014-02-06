@@ -27,6 +27,8 @@
 
 #ifdef MOZILLA_INTERNAL_API
 #include "VideoSegment.h"
+#else // !MOZILLA_INTERNAL_API
+#include "VideoSegmentEx.h"
 #endif
 
 namespace mozilla {
@@ -591,6 +593,7 @@ class MediaPipelineReceiveVideo : public MediaPipelineReceive {
   class PipelineListener : public GenericReceiveListener {
    public:
     PipelineListener(SourceMediaStream * source, TrackID track_id);
+    virtual ~PipelineListener();
 
     // Implement MediaStreamListener
     virtual void NotifyQueuedTrackChanges(MediaStreamGraph* graph, TrackID tid,
@@ -622,6 +625,9 @@ class MediaPipelineReceiveVideo : public MediaPipelineReceive {
 #ifdef MOZILLA_INTERNAL_API
     nsRefPtr<layers::ImageContainer> image_container_;
     nsRefPtr<layers::Image> image_;
+#else // !MOZILLA_INTERNAL_API
+    const unsigned char* image_;
+    unsigned int imageSize_;
 #endif
     mozilla::ReentrantMonitor monitor_; // Monitor for processing WebRTC frames.
                                         // Protects image_ against:

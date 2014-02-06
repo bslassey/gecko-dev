@@ -6,6 +6,8 @@
 #include "VideoSegment.h"
 #include "ImageContainer.h"
 
+#include <stdio.h>
+
 namespace mozilla {
 
 using namespace layers;

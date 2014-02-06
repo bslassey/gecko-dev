@@ -203,6 +203,9 @@
             'USE_FAKE_MEDIA_STREAMS',
             'USE_FAKE_PCOBSERVER'
           ],
+          'sources': [
+            './src/mediapipeline/VideoSegmentEx.cpp',
+          ],
         }],
         ['(OS=="linux") or (OS=="android")', {
           'include_dirs': [

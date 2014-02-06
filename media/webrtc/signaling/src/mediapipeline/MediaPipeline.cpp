@@ -42,6 +42,8 @@
 #include "mozilla/gfx/Point.h"
 #include "mozilla/gfx/Types.h"
 
+#define RLOG(format, ...) fprintf(stderr, format, ##__VA_ARGS__);
+
 using namespace mozilla;
 using namespace mozilla::gfx;
 
@@ -1182,10 +1184,19 @@ MediaPipelineReceiveVideo::PipelineListener::PipelineListener(
 #ifdef MOZILLA_INTERNAL_API
     image_container_(),
     image_(),
+#else // !MOZILLA_INTERNAL_API
+    image_(nullptr),
+    imageSize_(0),
 #endif
     monitor_("Video PipelineListener") {
 #ifdef MOZILLA_INTERNAL_API
   image_container_ = layers::LayerManager::CreateImageContainer();
+#endif
+}
+
+MediaPipelineReceiveVideo::PipelineListener::~PipelineListener() {
+#if !defined(MOZILLA_INTERNAL_API)
+  delete[]image_;
 #endif
 }
 
@@ -1226,6 +1237,27 @@ void MediaPipelineReceiveVideo::PipelineListener::RenderVideoFrame(
   videoImage->SetData(data);
 
   image_ = image.forget();
+#else // !MOZILLA_INTERNAL_API
+  if (buffer) {
+RLOG("MediaPipelineReceiveVideo::PipelineListener::RenderVideoFrame %d\n", (int)buffer_size);
+    if (!image_ || (imageSize_ != buffer_size)) {
+      delete []image_;
+      image_ = new unsigned char[buffer_size];
+      imageSize_ = buffer_size;
+    }
+
+    if (image_) {
+      memcpy((void*)image_, (const void*)buffer, buffer_size);
+    }
+    else {
+      // memory error!
+    }
+  }
+  else {
+    delete []image_;
+    image_ = nullptr;
+    imageSize_ = 0;
+  }
 #endif
 }
 
@@ -1233,18 +1265,30 @@ void MediaPipelineReceiveVideo::PipelineListener::
 NotifyPull(MediaStreamGraph* graph, StreamTime desired_time) {
   ReentrantMonitorAutoEnter enter(monitor_);
 
-#ifdef MOZILLA_INTERNAL_API
-  nsRefPtr<layers::Image> image = image_;
+RLOG("MediaPipelineReceiveVideo::PipelineListener::NotifyPull\n");
   TrackTicks target = TimeToTicksRoundUp(USECS_PER_S, desired_time);
   TrackTicks delta = target - played_ticks_;
+
+#ifdef MOZILLA_INTERNAL_API
+  nsRefPtr<layers::Image> image = image_;
+#endif
 
   // Don't append if we've already provided a frame that supposedly
   // goes past the current aDesiredTime Doing so means a negative
   // delta and thus messes up handling of the graph
   if (delta > 0) {
+RLOG("delta > 0\n");
+#ifdef MOZILLA_INTERNAL_API
     VideoSegment segment;
     segment.AppendFrame(image ? image.forget() : nullptr, delta,
                         gfxIntSize(width_, height_));
+#else // !MOZILLA_INTERNAL_API
+    VideoSegmentEx segment;
+    segment.AppendFrame(image_, imageSize_, delta,
+                        gfxIntSize(width_, height_));
+    image_ = nullptr;
+    imageSize_ = 0;
+#endif
     // Handle track not actually added yet or removed/finished
     if (source_->AppendToTrack(track_id_, &segment)) {
       played_ticks_ = target;
@@ -1253,7 +1297,6 @@ NotifyPull(MediaStreamGraph* graph, StreamTime desired_time) {
       return;
     }
   }
-#endif
 }
 
 
