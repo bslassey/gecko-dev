@@ -1288,8 +1288,6 @@ RLOG("delta > 0\n");
     VideoSegmentEx segment;
     segment.AppendFrame(image_, imageSize_, delta,
                         gfxIntSize(width_, height_));
-    image_ = nullptr;
-    imageSize_ = 0;
 #endif
     // Handle track not actually added yet or removed/finished
     if (source_->AppendToTrack(track_id_, &segment)) {
