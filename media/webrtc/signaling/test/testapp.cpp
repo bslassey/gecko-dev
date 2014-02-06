@@ -53,6 +53,15 @@
   fflush(stdout);
 
 class VideoSink : public Fake_MediaStreamSink {
+public:
+  VideoSink() {
+    //play with "mplayer -demuxer rawvideo -rawvideo w=640:h=480:format=i420 video.yuv"
+    mFile = fopen("video.yuv", "w");
+  }
+  ~VideoSink() {
+    fclose(mFile);
+  }
+
   virtual void SegmentReady(mozilla::TrackID track,
                             mozilla::MediaSegment *segment) {
     fprintf(stderr, "Received segment\n");
@@ -62,7 +71,9 @@ class VideoSink : public Fake_MediaStreamSink {
     unsigned int size;
     const unsigned char *image = frame->GetImage(&size);
     fprintf(stderr, "SIZE = %u\n", size);
+    fwrite(image, size, 1, mFile);
   }
+  FILE* mFile;
 };
 
 class PCObserver : public PeerConnectionObserverExternal, public nsITimerCallback
