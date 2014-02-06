@@ -439,6 +439,7 @@ main(int argc, char *argv[]) {
 
   mozilla::RefPtr<sipcc::PeerConnectionImpl> pc = sipcc::PeerConnectionImpl::CreatePeerConnection();
   nsRefPtr<PCObserver> pco = new PCObserver(pc.get());
+  //nsCOMPtr<nsISupports> supports = do_QueryInterface(thread);
   pc->Initialize(*pco, nullptr, cfg, thread.get());
 
   nsCOMPtr<nsIRunnable> event = new nsReadStdin(thread, pc);

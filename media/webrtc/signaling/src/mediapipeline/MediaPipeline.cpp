@@ -42,6 +42,8 @@
 #include "mozilla/gfx/Point.h"
 #include "mozilla/gfx/Types.h"
 
+#include "SimpleSegment.h"
+
 #define RLOG(format, ...) fprintf(stderr, format, ##__VA_ARGS__);
 
 using namespace mozilla;
@@ -1165,9 +1167,9 @@ nsresult MediaPipelineReceiveVideo::Init() {
   description_ += track_id_string;
   description_ += "]";
 
-#ifdef MOZILLA_INTERNAL_API
-  listener_->AddSelf(new VideoSegment());
-#endif
+//#ifdef MOZILLA_INTERNAL_API
+  listener_->AddSelf(new SimpleSegment());
+//#endif
 
   // Always happens before we can DetachMediaStream()
   static_cast<VideoSessionConduit *>(conduit_.get())->
