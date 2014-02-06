@@ -1,4 +1,4 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+/* This Source Code Form is subject to the terms of the ozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
@@ -31,6 +31,11 @@ namespace mozilla {
 };
 
 class Fake_SourceMediaStream;
+
+class Fake_MediaStreamSink {
+ public:
+  virtual void SegmentReady(mozilla::TrackID, mozilla::MediaSegment *) = 0;
+};
 
 static const int64_t USECS_PER_S = 1000000;
 
@@ -129,7 +134,8 @@ class Fake_SourceMediaStream : public Fake_MediaStream {
                              mDesiredTime(0),
                              mPullEnabled(false),
                              mStop(false),
-                             mPeriodic(new Fake_MediaPeriodic(this)) {}
+                             mPeriodic(new Fake_MediaPeriodic(this)),
+                             mSink(nullptr) {}
 
   void AddTrack(mozilla::TrackID aID, mozilla::TrackRate aRate, mozilla::TrackTicks aStart,
                 mozilla::MediaSegment* aSegment) {}
@@ -174,6 +180,10 @@ class Fake_SourceMediaStream : public Fake_MediaStream {
       //segment count.
       ++mSegmentsAdded;
     }
+
+    if (mSink)
+      mSink->SegmentReady(aID, aSegment);
+
     return true;
   }
 
@@ -201,6 +211,10 @@ class Fake_SourceMediaStream : public Fake_MediaStream {
     return mSegmentsAdded;
   }
 
+  virtual void SetSink(Fake_MediaStreamSink *sink) {
+    mSink = sink;
+  }
+
  protected:
   int mSegmentsAdded;
   uint64_t mDesiredTime;
@@ -208,6 +222,7 @@ class Fake_SourceMediaStream : public Fake_MediaStream {
   bool mStop;
   nsRefPtr<Fake_MediaPeriodic> mPeriodic;
   nsCOMPtr<nsITimer> mTimer;
+  Fake_MediaStreamSink *mSink;
 };
 
 

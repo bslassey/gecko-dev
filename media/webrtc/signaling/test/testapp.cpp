@@ -52,6 +52,19 @@
   fprintf(stdout, "\n"); \
   fflush(stdout);
 
+class VideoSink : public Fake_MediaStreamSink {
+  virtual void SegmentReady(mozilla::TrackID track,
+                            mozilla::MediaSegment *segment) {
+    fprintf(stderr, "Received segment\n");
+    mozilla::VideoSegmentEx *video = static_cast<mozilla::VideoSegmentEx *>
+        (segment);
+    const mozilla::VideoFrameEx *frame = video->GetLastFrame();
+    unsigned int size;
+    const unsigned char *image = frame->GetImage(&size);
+    fprintf(stderr, "SIZE = %u\n", size);
+  }
+};
+
 class PCObserver : public PeerConnectionObserverExternal, public nsITimerCallback
 {
 public:
@@ -221,7 +234,14 @@ PCObserver::OnStateChange(mozilla::dom::PCObserverStateType state_type, ER&, voi
 NS_IMETHODIMP
 PCObserver::OnAddStream(nsIDOMMediaStream *stream, ER&)
 {
+  VideoSink *sink = new VideoSink();
+
   LOG("Add stream %p\n", (void*)stream);
+
+  mozilla::DOMMediaStream *ms = static_cast<mozilla::DOMMediaStream *>(stream);
+  Fake_SourceMediaStream *fs = static_cast<Fake_SourceMediaStream *>(ms->GetStream());
+  fs->SetSink(sink);
+
   mStream = stream;
   return NS_OK;
 }
